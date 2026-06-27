@@ -20,16 +20,16 @@ function Login() {
     setLoading(true);
 
     sileo.promise(login(email, password), {
-      loading: { title: "Iniciando sesión..." },
+      loading: { title: "Loging..." },
       success: () => {
         setLoading(false);
         navigate("/");
-        return { title: "✅ ¡Bienvenido!" };
+        return { title: "✅ See You Soon!" };
       },
       error: (err) => {
         setLoading(false);
         return {
-          title: " Error",
+          title: "Error",
           description: err.message || "Credenciales incorrectas",
         };
       },
