@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { TitleForm } from "../../components/Forms/TitleForm";
+import { InputForm } from "../../components/Forms/inputForm";
+import { ButtonForm } from "../../components/Forms/ButtonForm";
+import { QuestionForm } from "../../components/Forms/QuestionForm";
+import { sileo, Toaster } from "sileo";
 
 function Register() {
   const [email, setEmail] = useState("");
@@ -14,68 +19,77 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
-      return;
-    }
-
     setLoading(true);
-    setError("");
 
-    try {
-      await register(email, password);
-      navigate("/"); // Redirigir a tareas después de registro
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
+    sileo.promise(register(email, password, confirmPassword), {
+      loading: { title: "Registering ..." },
+      success: () => {
+        setLoading(false);
+        navigate("/");
+        return { title: "Please confirm email" };
+      },
+      error: (err) => {
+        setLoading(false);
+        return {
+          title: "Error",
+          description: err.message,
+        };
+      },
+    });
   };
 
   return (
     <div>
-      <h2>Registrarse</h2>
+      <TitleForm title={"Register"} />
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+      <article className="bg-zinc-950 sm:w-80 p-4 rounded-md mt-4">
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          <div>
+            <InputForm
+              labelName="Email"
+              typeForm="email"
+              placeHolderValue="email"
+              valueForm={email}
+              accionForm={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-        <div>
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+          <div>
+            <InputForm
+              labelName="Password"
+              typeForm="Password"
+              placeHolderValue="password"
+              valueForm={password}
+              accionForm={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-        <div>
-          <input
-            type="password"
-            placeholder="Confirmar Contraseña"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </div>
+          <div>
+            <InputForm
+              labelName="Password Confirmation"
+              typeForm="password"
+              placeHolderValue="password confirmation"
+              valueForm={confirmPassword}
+              accionForm={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Registrando..." : "Registrarse"}
-        </button>
-      </form>
+          <ButtonForm loadCondition={loading} />
+        </form>
+      </article>
 
-      <p>
-        ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
-      </p>
+      <QuestionForm
+        question={"Already have account?"}
+        linkTo={"/login"}
+        linkQuestion={"sign In"}
+      />
+
+      <Toaster
+        position="top-center"
+        options={{
+          fill: "#000",
+        }}
+      />
 
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
